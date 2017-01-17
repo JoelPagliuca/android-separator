@@ -1,8 +1,12 @@
+#!/usr/bin/env python
 """
 android-separator
 
 gives you all the juicy bits of an apk
 puts them in an output folder next to the app
+
+WARNING this runs os.system a few times so if you use an apk with a weird name
+and get weird system issues it's your own fault
 """
 import os
 import sys
@@ -62,8 +66,28 @@ def unzip(app):
     return zip_contents
 
 
-def get_jar():
-    pass
+def get_jar(contents_dir):
+    """
+    get the package jar from the classes.dex
+
+    :param contents_dir: where to find the app contents
+    :type contents_dir: str
+    :return: location of the classes jar
+    :rtype: str
+    """
+    tag = "GETJAR"
+    dprint("get_jar", tag)
+    dex_file = os.path.join(contents_dir, "classes.dex")
+    if not (os.path.isfile(dex_file)):
+        print "classes.dex could not be found"
+    dprint(dex_file, tag)
+    command = "{dex2jar} {dex_file} -o classes.jar".format(
+        dex2jar=os.path.join(TOOL_PATH, D2J),
+        dex_file=dex_file
+    )
+    dprint(command, tag)
+    os.system(command)
+    dprint("done", tag)
 
 
 def get_source():
@@ -112,8 +136,8 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # do the things
-    contents_dir = unzip(APP_NAME)
-    get_jar()
+    contents_dir = unzip(os.path.join('..', APP_NAME))
+    jar_dir = get_jar(contents_dir)
     get_source()
     get_manifest()
 
