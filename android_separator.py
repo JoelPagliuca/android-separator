@@ -26,6 +26,7 @@ DEBUG = True
 def dprint(msg, tag="DEBUG"):
     """
     print a debug message
+
     :param msg: message to be printed
     :type msg: str
     :param tag: [tag] will be printed before msg
@@ -39,6 +40,7 @@ def dprint(msg, tag="DEBUG"):
 def usage():
     """
     print usage
+
     :return: None
     """
     print "android_separator.py <app.apk>"
@@ -47,11 +49,17 @@ def usage():
 def unzip(app):
     """
     unzip the app and put the contents in a new folder
+
     :param app: name of the app
     :type app: str
     :return: name of directory with unzip contents
+    :rtype: str
     """
-    pass
+    zip_contents = "contents"
+    zip_file = zipfile.ZipFile(app, 'r')
+    zip_file.extractall(zip_contents)
+    zip_file.close()
+    return zip_contents
 
 
 def get_jar():
@@ -83,9 +91,6 @@ if __name__ == '__main__':
         print APP_PATH + " was not a valid file"
         sys.exit(1)
 
-
-    # make a new directory to work in
-
     APP_NAME = os.path.basename(APP_PATH)
     APP_DIR = os.path.dirname(APP_PATH)
     dprint("working with "+APP_NAME)
@@ -95,8 +100,19 @@ if __name__ == '__main__':
         os.chdir(APP_DIR)
         dprint("changed to directory "+os.getcwd())
 
+    # make a new directory to work in
+    directory = APP_NAME+"_separated"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        dprint("made directory "+directory)
+        os.chdir(directory)
+        dprint("changed to directory "+os.getcwd())
+    else:
+        print "output directory already exists, failing"
+        sys.exit(1)
+
     # do the things
-    unzip(APP_NAME)
+    contents_dir = unzip(APP_NAME)
     get_jar()
     get_source()
     get_manifest()
