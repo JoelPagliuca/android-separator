@@ -10,9 +10,16 @@ import zipfile
 
 __all__ = []
 
+APP_PATH = None   # full path of app
+APP_DIR  = None   # path to the app
+APP_NAME = None   # name of the app
 
-APP_NAME = ""   # name of the app
-APP_PATH = ""   # path to the app
+DEBUG = True
+
+
+def dprint(msg, tag="DEBUG"):
+    if DEBUG:
+        print "[{}] {}".format(tag, msg)
 
 
 def usage():
@@ -36,12 +43,28 @@ def get_manifest():
 
 
 if __name__ == '__main__':
+    dprint("starting")
     # check args
     if len(sys.argv) != 2:
         usage()
         sys.exit(1)
+    dprint("checked args")
+
+    # check if file exists
+    APP_PATH = sys.argv[1]
+    if not (os.path.exists(APP_PATH) and os.path.isfile(APP_PATH)):
+        print APP_PATH + " was not a valid file"
+        sys.exit(1)
+
+    APP_NAME = os.path.basename(APP_PATH)
+    APP_DIR = os.path.dirname(APP_PATH)
+    dprint("working with "+APP_NAME)
 
     # go to the app
+    if APP_DIR:
+        dprint("going to directory "+APP_DIR)
+        os.chdir(APP_DIR)
+        dprint("in directory "+os.getcwd())
 
     # do the things
     unzip()
