@@ -14,7 +14,7 @@ __all__ = []
 TOOL_PATH = None  # path for where apktool, cfr, d2j are
 CFR = "cfr_0_119.jar"
 APKTOOL = "apktool"
-D2J = "dex2jar-2.0/d2j-dex2jar.sh"
+D2J = "d2j-dex2jar.sh"
 
 APP_PATH = None   # full path of app
 APP_DIR = None    # path to the app
@@ -74,14 +74,16 @@ if __name__ == '__main__':
         sys.exit(1)
     dprint("checked args")
 
+    TOOL_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tools")
+    dprint("tools are in "+TOOL_PATH)
+
     # check if file exists
     APP_PATH = sys.argv[1]
     if not (os.path.exists(APP_PATH) and os.path.isfile(APP_PATH)):
         print APP_PATH + " was not a valid file"
         sys.exit(1)
 
-    TOOL_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tools")
-    dprint("tools are in "+TOOL_PATH)
+
     # make a new directory to work in
 
     APP_NAME = os.path.basename(APP_PATH)
