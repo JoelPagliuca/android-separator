@@ -11,6 +11,8 @@ and get weird system issues it's your own fault
 import os
 import sys
 import zipfile
+import tempfile
+import shutil
 
 __all__ = []
 
@@ -78,24 +80,70 @@ def get_jar(contents_dir):
     tag = "GETJAR"
     dprint("get_jar", tag)
     dex_file = os.path.join(contents_dir, "classes.dex")
+    jar_file = "classes.jar"
     if not (os.path.isfile(dex_file)):
         print "classes.dex could not be found"
+        sys.exit(1)
     dprint(dex_file, tag)
-    command = "{dex2jar} {dex_file} -o classes.jar".format(
+    command = "{dex2jar} {dex_file} -o {jar}".format(
         dex2jar=os.path.join(TOOL_PATH, D2J),
-        dex_file=dex_file
+        dex_file=dex_file,
+        jar=jar_file
+    )
+    dprint(command, tag)
+    os.system(command)
+    dprint("done", tag)
+    return jar_file
+
+
+def get_source(jar_file):
+    """
+    get the source code from the jar using cfr
+
+    :param jar_file: name of the jar file
+    :type jar_file: str
+    :return: None
+    """
+    #TODO --jarfilter '^(?!android|google.)*$' to get rid of the google and android crap
+    tag = "SOURCE"
+    dprint("get_source", tag)
+    src = 'src'
+    command = "java -jar {cfr} {filename} --outputdir {src} --silent true".format(
+        cfr=os.path.join(TOOL_PATH, CFR),
+        filename=jar_file,
+        src=src
     )
     dprint(command, tag)
     os.system(command)
     dprint("done", tag)
 
 
-def get_source():
-    pass
+def get_manifest(app):
+    """
+    get the android manifest using apktool
 
-
-def get_manifest():
-    pass
+    :param app: name of the app
+    :type app: str
+    :return: None
+    """
+    tag = "MANIFEST"
+    dprint("get_manifest", tag)
+    tempdir = tempfile.mkdtemp()
+    command = "{apktool} d -r -s -f -o {out} {filename}".format(
+        apktool=os.path.join(TOOL_PATH, APKTOOL),
+        filename=app,
+        out=tempdir
+    )
+    dprint(command, tag)
+    os.system(command)
+    dprint("getting the manifest file", tag)
+    try:
+        shutil.copy(os.path.join(tempdir, "AndroidManifest.xml"), "AndroidManifest.xml")
+    except OSError:
+        print "could not get AndroidManifest.xml"
+    dprint("cleaning up the apktool output", tag)
+    shutil.rmtree(tempdir)
+    dprint("done", tag)
 
 
 if __name__ == '__main__':
@@ -137,8 +185,9 @@ if __name__ == '__main__':
 
     # do the things
     contents_dir = unzip(os.path.join('..', APP_NAME))
-    jar_dir = get_jar(contents_dir)
-    get_source()
-    get_manifest()
+    jar_file = get_jar(contents_dir)
+    get_source(jar_file)
+    get_manifest(os.path.join('..', APP_NAME))
 
+    dprint("exiting")
     sys.exit(0)
