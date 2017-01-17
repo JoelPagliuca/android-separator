@@ -10,23 +10,47 @@ import zipfile
 
 __all__ = []
 
+
+TOOL_PATH = None  # path for where apktool, cfr, d2j are
+CFR = "cfr_0_119.jar"
+APKTOOL = "apktool"
+D2J = "dex2jar-2.0/d2j-dex2jar.sh"
+
 APP_PATH = None   # full path of app
-APP_DIR  = None   # path to the app
+APP_DIR = None    # path to the app
 APP_NAME = None   # name of the app
 
 DEBUG = True
 
 
 def dprint(msg, tag="DEBUG"):
+    """
+    print a debug message
+    :param msg: message to be printed
+    :type msg: str
+    :param tag: [tag] will be printed before msg
+    :type tag: str
+    :return: None
+    """
     if DEBUG:
         print "[{}] {}".format(tag, msg)
 
 
 def usage():
-    print "android-separator.py <app.apk>"
+    """
+    print usage
+    :return: None
+    """
+    print "android_separator.py <app.apk>"
 
 
-def unzip():
+def unzip(app):
+    """
+    unzip the app and put the contents in a new folder
+    :param app: name of the app
+    :type app: str
+    :return: name of directory with unzip contents
+    """
     pass
 
 
@@ -56,18 +80,21 @@ if __name__ == '__main__':
         print APP_PATH + " was not a valid file"
         sys.exit(1)
 
+    TOOL_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tools")
+    dprint("tools are in "+TOOL_PATH)
+    # make a new directory to work in
+
     APP_NAME = os.path.basename(APP_PATH)
     APP_DIR = os.path.dirname(APP_PATH)
     dprint("working with "+APP_NAME)
 
     # go to the app
     if APP_DIR:
-        dprint("going to directory "+APP_DIR)
         os.chdir(APP_DIR)
-        dprint("in directory "+os.getcwd())
+        dprint("changed to directory "+os.getcwd())
 
     # do the things
-    unzip()
+    unzip(APP_NAME)
     get_jar()
     get_source()
     get_manifest()
